@@ -28,6 +28,7 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(account) //decode the request body into struct and failed if any error occur
 	if err != nil {
 		u.Respond(w, u.Message(false, "Invalid request"))
+		fmt.Println("invalid request")
 		return
 	}
 

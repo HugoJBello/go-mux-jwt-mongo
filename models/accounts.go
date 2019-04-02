@@ -21,9 +21,9 @@ type Token struct {
 
 //a struct to rep user account
 type Account struct {
-	Email string `bson:"email"`
-	Password string `bson:"password"`
-	Token string `bson:"token"`
+	Email string `bson:"email" json:"email,omitempty"`
+	Password string `bson:"password" json:"password,omitempty"`
+	Token string `bson:"token" json:"token,omitempty"`
 	ID string `bson:"_id,omitempty" json:"_id,omitempty"`
 }
 
@@ -95,9 +95,10 @@ func Login(email, password string) (map[string]interface{}) {
 	account := &Account{}
 	db := GetDB()
 	collection := db.Collection("users")
-	foundAccount := Account{}
-	err := collection.FindOne(context.Background(), bson.M{"email": account.Email}).Decode(foundAccount)
+	foundAccount := &Account{}
+	err := collection.FindOne(context.Background(), bson.M{"email": email}).Decode(foundAccount)
 	if err != nil {
+		fmt.Println(err)
 		return u.Message(false, "Connection error. Please retry")
 	}
 
