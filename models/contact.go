@@ -1,7 +1,7 @@
 package models
 
 import (
-	u "github.com/go-contacts/utils"
+	u "go-mux-jwt-mongo/utils"
 	"github.com/jinzhu/gorm"
 	"fmt"
 )

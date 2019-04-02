@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"net/http"
-	"github.com/go-contacts/models"
+	"go-mux-jwt-mongo/models"
 	"encoding/json"
-	u "github.com/go-contacts/utils"
+	u "go-mux-jwt-mongo/utils"
 )
 
 var CreateContact = func(w http.ResponseWriter, r *http.Request) {

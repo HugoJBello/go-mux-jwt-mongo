@@ -3,8 +3,8 @@ package controllers
 import (
 	"fmt"
 	"net/http"
-	u "github.com/go-contacts/utils"
-	"github.com/go-contacts/models"
+	u "go-mux-jwt-mongo/utils"
+	"go-mux-jwt-mongo/models"
 	"encoding/json"
 )
 
