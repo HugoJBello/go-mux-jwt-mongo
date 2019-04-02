@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	u "github.com/go-contacts/utils"
-	"go.mongodb.org/mongo-driver/bson"
+	"gopkg.in/mgo.v2/bson"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 	"strings"
@@ -21,10 +21,10 @@ type Token struct {
 
 //a struct to rep user account
 type Account struct {
-	Email string `bson:"email" json:"email"`
-	Password string `bson:"password" json:"password"`
-	Token string `bson:"token" json:"token"`
-	ID string `bson:"_id" json:"_id"`
+	Email string `bson:"email"`
+	Password string `bson:"password"`
+	Token string `bson:"token"`
+	ID string `bson:"_id,omitempty" json:"_id,omitempty"`
 }
 
 //Validate incoming user details...
@@ -42,13 +42,13 @@ func (account *Account) Validate() (map[string] interface{}, bool) {
 	//check for errors and duplicate emails
 	db := GetDB()
 	collection := db.Collection("users")
-	foundAccount := Account{}
+	foundAccount := &Account{}
 	err := collection.FindOne(context.Background(), bson.M{"email": account.Email}).Decode(foundAccount)
 
 	if err != nil {
 		fmt.Println(err)
-		return u.Message(false, "Connection error. Please retry"), false
 	}
+
 	if foundAccount.Email != "" {
 		return u.Message(false, "Email address already in use by another user."), false
 	}
@@ -61,6 +61,7 @@ func (account *Account) Create() (map[string] interface{}) {
 	if resp, ok := account.Validate(); !ok {
 		return resp
 	}
+	account.ID = bson.NewObjectId().Hex()
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
 	account.Password = string(hashedPassword)
@@ -75,6 +76,8 @@ func (account *Account) Create() (map[string] interface{}) {
 	}
 
 	//Create new JWT token for the newly registered account
+	fmt.Println(account.ID)
+
 	tk := &Token{UserId: account.ID}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))

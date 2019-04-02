@@ -1,10 +1,11 @@
 package main
 
 import (
-	"go-mux-jwt-mongo/app"
-	"go-mux-jwt-mongo/controllers"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"go-mux-jwt-mongo/app"
+	"go-mux-jwt-mongo/controllers"
+	u "go-mux-jwt-mongo/utils"
 	"log"
 	"net/http"
 	"os"
@@ -18,6 +19,8 @@ func main() {
 	router.HandleFunc("/api/user/login", controllers.Authenticate).Methods("POST")
 	router.HandleFunc("/api/contacts/new", controllers.CreateContact).Methods("POST")
 	router.HandleFunc("/api/me/contacts", controllers.GetContactsFor).Methods("GET") //  user/2/contacts
+
+	router.HandleFunc("/", u.LogHandler(u.MessageHandler))
 
 	router.Use(app.JwtAuthentication) //attach JWT auth middleware
 

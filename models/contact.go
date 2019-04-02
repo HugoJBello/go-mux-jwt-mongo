@@ -1,16 +1,17 @@
 package models
 
 import (
-	u "go-mux-jwt-mongo/utils"
-	"github.com/jinzhu/gorm"
+	"context"
 	"fmt"
+	u "go-mux-jwt-mongo/utils"
+	"go.mongodb.org/mongo-driver/bson"
+	"log"
 )
 
 type Contact struct {
-	gorm.Model
 	Name string `json:"name"`
 	Phone string `json:"phone"`
-	UserId uint `json:"user_id"` //The user that this contact belongs to
+	UserId string `json:"user_id"` //The user that this contact belongs to
 }
 
 /*
@@ -28,7 +29,7 @@ func (contact *Contact) Validate() (map[string] interface{}, bool) {
 		return u.Message(false, "Phone number should be on the payload"), false
 	}
 
-	if contact.UserId <= 0 {
+	if contact.UserId == "" {
 		return u.Message(false, "User is not recognized"), false
 	}
 
@@ -42,30 +43,52 @@ func (contact *Contact) Create() (map[string] interface{}) {
 		return resp
 	}
 
-	GetDB().Create(contact)
+	db := GetDB()
+	collection := db.Collection("contacts")
+	_, err := collection.InsertOne(context.Background(), contact)
 
-	resp := u.Message(true, "success")
-	resp["contact"] = contact
-	return resp
+	if err == nil{
+		resp := u.Message(true, "success")
+		resp["contact"] = contact
+		return resp
+	} else {
+		return nil
+	}
+
 }
 
-func GetContact(id uint) (*Contact) {
+func GetContact(id string) (*Contact) {
 
-	contact := &Contact{}
-	err := GetDB().Table("contacts").Where("id = ?", id).First(contact).Error
+	db := GetDB()
+	collection := db.Collection("contacts")
+	contact := Contact{}
+	err := collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(contact)
+
 	if err != nil {
 		return nil
 	}
-	return contact
+	return &contact
 }
 
-func GetContacts(user uint) ([]*Contact) {
+func GetContacts(user string) ([]*Contact) {
 
-	contacts := make([]*Contact, 0)
-	err := GetDB().Table("contacts").Where("user_id = ?", user).Find(&contacts).Error
+	db := GetDB()
+	collection := db.Collection("contacts")
+	contacts := []*Contact{}
+	cur, err := collection.Find(context.Background(), bson.M{"user_id": user})
 	if err != nil {
 		fmt.Println(err)
 		return nil
+	}
+	for cur.Next(context.Background()) {
+
+		// create a value into which the single document can be decoded
+		var contact Contact
+		err := cur.Decode(&contact)
+		if err != nil {
+			log.Fatal(err)
+		}
+		contacts = append(contacts, &contact)
 	}
 
 	return contacts
