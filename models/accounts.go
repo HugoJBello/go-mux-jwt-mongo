@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	u "github.com/go-contacts/utils"
+	u "go-mux-jwt-mongo/utils"
 	"gopkg.in/mgo.v2/bson"
 	"golang.org/x/crypto/bcrypt"
 	"os"
