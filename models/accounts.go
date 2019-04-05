@@ -90,7 +90,7 @@ func (account *Account) Create() (map[string] interface{}) {
 	return response
 }
 
-func Login(email, password string) (map[string]interface{}) {
+func Login(email, password string) (resp map[string]interface{}, code int) {
 
 	account := &Account{}
 	db := GetDB()
@@ -99,12 +99,12 @@ func Login(email, password string) (map[string]interface{}) {
 	err := collection.FindOne(context.Background(), bson.M{"email": email}).Decode(foundAccount)
 	if err != nil {
 		fmt.Println(err)
-		return u.Message(false, "Connection error. Please retry")
+		return u.Message(false, "Connection error. Please retry"), 500
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(password))
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
-		return u.Message(false, "Invalid login credentials. Please try again")
+		return u.Message(false, "Invalid login credentials. Please try again"), 401
 	}
 	//Worked! Logged In
 	account.Password = ""
@@ -115,9 +115,9 @@ func Login(email, password string) (map[string]interface{}) {
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
 	account.Token = tokenString //Store the token in the response
 
-	resp := u.Message(true, "Logged In")
-	resp["account"] = account
-	return resp
+	resps := u.Message(true, "Logged In")
+	resps["account"] = account
+	return resps, 200
 }
 
 func GetUser(u string) *Account {
