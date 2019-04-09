@@ -41,10 +41,6 @@ func Aggregate(
 
 	var ss *topology.SelectedServer
 	var err error
-	if cmd.Session != nil && cmd.Session.PinnedSelector != nil {
-		writeSelector = cmd.Session.PinnedSelector
-		readSelector = cmd.Session.PinnedSelector
-	}
 	switch dollarOut {
 	case true:
 		ss, err = topo.SelectServer(ctx, writeSelector)

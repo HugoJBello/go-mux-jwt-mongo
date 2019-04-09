@@ -4,7 +4,7 @@
 // not use this file except in compliance with the License. You may obtain
 // a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-package session
+package session // import "go.mongodb.org/mongo-driver/x/mongo/driver/session"
 
 import (
 	"errors"
@@ -15,7 +15,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
-	"go.mongodb.org/mongo-driver/x/network/description"
 )
 
 // ErrSessionEnded is returned when a client session is used after a call to endSession().
@@ -85,9 +84,8 @@ type Client struct {
 	transactionRp *readpref.ReadPref
 	transactionWc *writeconcern.WriteConcern
 
-	pool           *Pool
-	state          state
-	PinnedSelector description.ServerSelector
+	pool  *Pool
+	state state
 }
 
 func getClusterTime(clusterTime bson.Raw) (uint32, uint32) {
@@ -275,7 +273,6 @@ func (c *Client) StartTransaction(opts *TransactionOptions) error {
 	}
 
 	c.state = Starting
-	c.PinnedSelector = nil
 	return nil
 }
 
@@ -298,7 +295,6 @@ func (c *Client) CommitTransaction() error {
 		return err
 	}
 	c.state = Committed
-	c.PinnedSelector = nil
 	return nil
 }
 
@@ -328,17 +324,13 @@ func (c *Client) AbortTransaction() error {
 }
 
 // ApplyCommand advances the state machine upon command execution.
-func (c *Client) ApplyCommand(desc description.Server) {
+func (c *Client) ApplyCommand() {
 	if c.Committing {
 		// Do not change state if committing after already committed
 		return
 	}
 	if c.state == Starting {
 		c.state = InProgress
-		// If this is in a transaction and the server is a mongos, pin it
-		if desc.Kind == description.Mongos {
-			c.PinnedSelector = desc
-		}
 	} else if c.state == Committed || c.state == Aborted {
 		c.clearTransactionOpts()
 		c.state = None
@@ -352,5 +344,4 @@ func (c *Client) clearTransactionOpts() {
 	c.CurrentWc = nil
 	c.CurrentRp = nil
 	c.CurrentRc = nil
-	c.PinnedSelector = nil
 }
