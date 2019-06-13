@@ -1,16 +1,24 @@
 package main
 
 import (
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
+	"go-mux-jwt-mongo/controllers"
+	"go-mux-jwt-mongo/middlewares"
+	"io"
 	"log"
 	"net/http"
 	"os"
-	"go-mux-jwt-mongo/controllers"
-	"go-mux-jwt-mongo/middlewares"
+
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 )
 
+const logPath = "logs.log"
+
+var Logger *log.Logger
+
 func main() {
+
+	InitLogger()
 
 	router := mux.NewRouter()
 
@@ -20,10 +28,8 @@ func main() {
 	router.HandleFunc("/api/contacts/new", controllers.CreateContact).Methods("POST")
 	router.HandleFunc("/api/me/contacts", controllers.GetContactsFor).Methods("GET") //  user/2/contacts
 
-	router.Use(middlewares.JwtAuthentication)        //attach JWT auth middleware
-	router.Use(middlewares.MiddlewareLogger) //attach JWT auth middleware
-
-
+	router.Use(middlewares.MiddlewareLogger)  //attach JWT auth middleware
+	router.Use(middlewares.JwtAuthentication) //attach JWT auth middleware
 
 	//router.NotFoundHandler = app.NotFoundHandler
 
@@ -38,5 +44,18 @@ func main() {
 
 	// start server listen
 	// with error handling
-	log.Fatal(http.ListenAndServe(":" + port, handlers.CORS(originsOk, headersOk, methodsOk)(router)))
+	log.Println("Starting server on port " + port)
+	log.Println(http.ListenAndServe(":"+port, handlers.CORS(originsOk, headersOk, methodsOk)(router)))
+}
+
+func InitLogger() {
+
+	file, err := os.OpenFile("log.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+
+	if err != nil {
+		log.Fatalln("Failed to open log file")
+	}
+	mw := io.MultiWriter(os.Stdout, file)
+	log.SetOutput(mw)
+
 }
