@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/assert"
+	"go-mux-jwt-mongo/models"
 	"net/http"
 	"net/http/httptest"
-	"go-mux-jwt-mongo/models"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateAccount(t *testing.T) {
@@ -17,7 +18,7 @@ func TestCreateAccount(t *testing.T) {
 	defer server.Close()
 
 	mux.HandleFunc("/api/user/new", CreateAccount)
-	body := models.Account{Email:"email3@email", Password:"password2"}
+	body := models.Account{Email: "test@test", Password: "aaa1234"}
 	json, _ := json.Marshal(body)
 
 	request, _ := http.NewRequest("POST", "/api/user/new", bytes.NewBuffer(json))

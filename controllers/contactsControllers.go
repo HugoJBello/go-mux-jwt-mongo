@@ -1,20 +1,22 @@
 package controllers
 
 import (
-	"net/http"
-	"go-mux-jwt-mongo/models"
 	"encoding/json"
+	"go-mux-jwt-mongo/models"
 	u "go-mux-jwt-mongo/utils"
+	"net/http"
 )
 
 var CreateContact = func(w http.ResponseWriter, r *http.Request) {
 
-	user := r.Context().Value("user") . (string) //Grab the id of the user that send the request
+	user := r.Context().Value("user").(string) //Grab the id of the user that send the request
 	contact := &models.Contact{}
 
 	err := json.NewDecoder(r.Body).Decode(contact)
+
 	if err != nil {
-		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		response := map[string]interface{}{"status": false, "message": "Error while decoding request body"}
+		u.Respond(w, response)
 		return
 	}
 
@@ -25,9 +27,9 @@ var CreateContact = func(w http.ResponseWriter, r *http.Request) {
 
 var GetContactsFor = func(w http.ResponseWriter, r *http.Request) {
 
-	id := r.Context().Value("user") . (string)
+	id := r.Context().Value("user").(string)
 	data := models.GetContacts(id)
-	resp := u.Message(true, "success")
-	resp["data"] = data
-	u.Respond(w, resp)
+	response := map[string]interface{}{"status": true, "message": "success"}
+	response["data"] = data
+	u.Respond(w, response)
 }

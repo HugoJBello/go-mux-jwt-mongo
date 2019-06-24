@@ -1,0 +1,4 @@
+2019/06/24 17:29:55 Starting server on port 8000
+2019/06/24 17:30:04 Mon Jun 24 17:30:04 CEST 2019 --> POST /api/user/login 
+2019/06/24 18:07:55 Starting server on port 8000
+2019/06/24 18:08:03 Mon Jun 24 18:08:03 CEST 2019 --> POST /api/user/login 
