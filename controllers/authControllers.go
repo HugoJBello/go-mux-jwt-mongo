@@ -33,8 +33,9 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, response)
 		return
 	}
+	fmt.Println(*account)
 
-	resp, code := models.Login(account.Email, account.Password)
+	resp, code := models.Login(account.Username, account.Password)
 	if code == 401 {
 		w.WriteHeader(http.StatusUnauthorized)
 	} else if code == 500 {
