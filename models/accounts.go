@@ -90,19 +90,17 @@ func (account *Account) Create() map[string]interface{} {
 	return response
 }
 
-func Login(Username, password string) (resp map[string]interface{}, code int) {
-
+func Login(username, password string) (resp map[string]interface{}, code int) {
 	account := &Account{}
 	db := GetDB()
 	collection := db.Collection("users")
 	foundAccount := &Account{}
-	err := collection.FindOne(context.Background(), bson.M{"username": Username}).Decode(foundAccount)
+	err := collection.FindOne(context.Background(), bson.M{"username": username}).Decode(foundAccount)
 	if err != nil {
 		fmt.Println(err)
 		return u.Message(false, "Invalid login credentials. Please try again"), 401
 	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(foundAccount.Password), []byte(password))
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
 		return u.Message(false, "Invalid login credentials. Please try again"), 401
 	}
